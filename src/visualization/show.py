@@ -24,17 +24,7 @@ class Show:
 
     def process(self, frame_data: FrameData) -> FrameData:
         frame_data.frame_out = frame_data.frame.copy()
-
-        if self.fps_counter is not None:
-            cv2.putText(
-                frame_data.frame_out,
-                f"FPS {self.fps_counter.get_fps():.1f}",
-                (50, 90),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 255, 0),
-                2
-            )
+        self.draw_frame_info(frame_data)
 
         track_info = zip(frame_data.track_xyxy, frame_data.track_id, frame_data.track_cls, frame_data.track_conf)
         for bbox, id_, cls, conf in track_info:
@@ -79,7 +69,7 @@ class Show:
 
         elif people.crash:
             color = (0, 0, 255)
-            cv2.putText(frame_data.frame_out, "Detected accident", (1000, 100), 1, 5, (0, 0, 255),5)
+            cv2.putText(frame_data.frame_out, "Detected accident", (40, 160), 1, 5, (0, 0, 255),5)
         else:
             color = (0, 255, 0)
 
@@ -94,7 +84,23 @@ class Show:
         self.draw_box(frame_data.frame_out, bbox, f"{cls} {round(conf, 2)}", (255, 0, 0))
 
     def draw_other(self, frame_data: FrameData, bbox, id_, cls, conf):
-        self.draw_box(frame_data.frame_out, bbox, f"{cls} {round(conf, 2)}", self.get_color(id_))
+        self.draw_box(frame_data.frame_out, bbox, f"{id_} {cls} {round(conf, 2)}", self.get_color(id_))
+
+    def draw_frame_info(self, frame_data: FrameData):
+        height, width = frame_data.frame_out.shape[:2]
+        scale_w = (width // 100) or 1
+        scale_h = (height // 100) or 1
+
+        if self.fps_counter is not None:
+            cv2.putText(
+                frame_data.frame_out,
+                f"FPS {self.fps_counter.get_fps():.1f}",
+                (scale_w * 2, scale_h * 8),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.15 * scale_h,
+                (0, 255, 0),
+                scale_h // 2
+            )
 
     @staticmethod
     def get_color(id_: int) -> tuple[int, int, int]:
