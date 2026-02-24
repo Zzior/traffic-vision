@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from data_classes.track import Person
+from data_classes.track import Person, Car
 
 
 @dataclass
@@ -18,4 +18,4 @@ class FrameData:
     track_cls: list[str] = field(default_factory=list)
 
     people: dict[int, Person] = field(default_factory=dict)
-    cars: dict[int, Person] = field(default_factory=dict)
+    cars: dict[int, Car] = field(default_factory=dict)

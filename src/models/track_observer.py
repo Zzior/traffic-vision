@@ -26,12 +26,13 @@ class TrackObserver:
             if object_class == "person":
                 self.update_person(track_id, frame_data.track_xyxy[id_])
 
-            elif object_class == "car":
+            elif object_class in ("bus", "car", "truck", "train"):
                 self.update_cars(track_id, frame_data.track_xyxy[id_])
 
         self.delete_objects(updated)
 
         frame_data.people = self.people
+        frame_data.cars = self.cars
         return frame_data
 
 

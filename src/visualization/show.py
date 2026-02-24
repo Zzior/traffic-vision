@@ -31,7 +31,7 @@ class Show:
             if cls == "person":
                 self.draw_person(frame_data, bbox, id_, cls, conf)
 
-            elif cls == "car":
+            elif cls in ("bus", "car", "truck", "train"):
                 self.draw_car(frame_data, bbox, id_, cls, conf)
 
             else:
