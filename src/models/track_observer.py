@@ -45,7 +45,7 @@ class TrackObserver:
         person.points.append(point)
 
         person.l_points.append((xyxy[0], xyxy[3]))
-        person.r_points.append((xyxy[1], xyxy[3]))
+        person.r_points.append((xyxy[2], xyxy[3]))
 
         in_danger_zone = False
         for roi in self.traffic_rois:
@@ -65,7 +65,7 @@ class TrackObserver:
         for car in self.cars.values():
             if (
                     self.check_intersection_box(person.l_points[-1], car.box)
-                    or self.check_intersection_box(person.points[-1], car.box)
+                    or self.check_intersection_box(person.r_points[-1], car.box)
             ):
                 car_intersected = car
                 break
