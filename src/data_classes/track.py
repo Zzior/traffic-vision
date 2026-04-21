@@ -11,7 +11,7 @@ class Person:
     num_disappearances: int = 0
     num_dangers_frames: int = 0
 
-    crash = False
+    crash: bool = False
 
 
 @dataclass
@@ -20,4 +20,4 @@ class Car:
     points: list[tuple[int, int]] = field(default_factory=list)
 
     num_disappearances: int = 0
-    has_mov = False
+    has_mov: bool = False
