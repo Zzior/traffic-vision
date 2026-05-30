@@ -8,7 +8,7 @@ source_info:
 
 
 detection:
-  weight_pth: "weights/best_s.pt"
+  weight_pth: "weights/train_2_s.pt"
   tracker_pth: "configs/botsort.yaml"  # bytetrack.yaml, botsort.yaml
   classes_to_detect: [0, 1, 2]
   track_buffer: 15
