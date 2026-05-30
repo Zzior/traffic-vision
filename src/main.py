@@ -42,7 +42,7 @@ def main(config) -> None:
     show = Show(config, traffic_rois)
     web = VideoServer(config)
 
-    if config["web_mov"]["show"]:
+    if config["web_stream"]["show"]:
         web.run()
 
     for frame_data in video_reader.process():
@@ -51,7 +51,7 @@ def main(config) -> None:
 
         if render_output:
             frame_data = show.process(frame_data)
-            if config["web_mov"]["show"]:
+            if config["web_stream"]["show"]:
                 web.update_image(frame_data.frame_out)
 
             if config["video_writer"]["write"]:

@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 
 class VideoServer:
     def __init__(self, config):
-        self.config_server = config["web_mov"]
+        self.config_server = config["web_stream"]
         self.app = FastAPI()
 
         # Routes

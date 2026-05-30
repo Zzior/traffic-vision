@@ -24,11 +24,13 @@ show:
   output_size: [1920, 1080]
   fps_buffer: 15  # calculate if buffer > 1
 
-web_mov:
+
+web_stream:
   show: False
   host_ip: 0.0.0.0
   port: 9020
   fps: 12
+
 
 video_writer:
   write: False
@@ -38,6 +40,7 @@ video_writer:
   skip_frames: 1
   fourcc: "XVID"
   fps: 30
+
 
 notify:
   location_name: "Samarkand base street ..."
