@@ -5,6 +5,7 @@ import numpy as np
 @dataclass
 class Person:
     points: list[tuple[int, int]] = field(default_factory=list)
+    boxes: list[tuple[int, int, int, int]] = field(default_factory=list)
     l_points: list[tuple[int, int]] = field(default_factory=list)
     r_points: list[tuple[int, int]] = field(default_factory=list)
 

@@ -20,7 +20,7 @@ class TrackObserver:
         updated = set()
 
         for id_, track_id in enumerate(frame_data.track_id):
-            updated.add(id_)
+            updated.add(track_id)
 
             object_class = frame_data.track_cls[id_]
             if object_class == "person":
@@ -35,14 +35,14 @@ class TrackObserver:
         frame_data.cars = self.cars
         return frame_data
 
-
-
-    def update_person(self, track_id, xyxy):
+    def update_person(self, track_id, xyxy: tuple[int, int, int, int]):
         person = self.people.setdefault(track_id, Person())
         person.num_disappearances = 0
 
+        box = tuple(xyxy)
         point = self.calc_bottom_point(xyxy)
         person.points.append(point)
+        person.boxes.append(box)
 
         person.l_points.append((xyxy[0], xyxy[3]))
         person.r_points.append((xyxy[2], xyxy[3]))
@@ -61,10 +61,15 @@ class TrackObserver:
             person.crash = True
 
     def detect_crash(self, person: Person) -> bool:
+        if not person.boxes:
+            return False
+
+        person_box = person.boxes[-1]
         car_intersected = None
         for car in self.cars.values():
             if (
-                    self.check_intersection_box(person.l_points[-1], car.box)
+                    self.check_intersection_boxes(person_box, car.box)
+                    or self.check_intersection_box(person.l_points[-1], car.box)
                     or self.check_intersection_box(person.r_points[-1], car.box)
             ):
                 car_intersected = car
@@ -78,14 +83,40 @@ class TrackObserver:
         if not mov:
             return False
 
-        anomalies = detect_motion_anomalies(person.points[-5:])
-        if len(anomalies) < 3:
+        anomalies = detect_motion_anomalies(person.points[-8:], person.boxes[-8:])
+        motion_signals = {
+            "high_speed",
+            "acceleration_spike",
+            "sudden_stop",
+            "sharp_turn",
+            "direction_reversal",
+        }
+        fall_signals = {
+            "bbox_size_change",
+            "bbox_aspect_change",
+            "bbox_height_drop",
+            "fall_transition",
+            "fallen_aspect_ratio",
+            "vertical_collapse",
+        }
+
+        motion_score = sum(len(anomalies.get(name, [])) for name in motion_signals)
+        fall_score = sum(len(anomalies.get(name, [])) for name in fall_signals)
+        strong_fall = any(anomalies.get(name) for name in ("fall_transition", "vertical_collapse"))
+
+        if strong_fall and (motion_score > 0 or fall_score >= 2):
+            return True
+
+        if anomalies.get("fallen_aspect_ratio") and motion_score > 0 and fall_score > 0:
+            return True
+
+        if motion_score < 3 and len(anomalies) < 3:
             return False
 
         return True
 
 
-    def update_cars(self, track_id, xyxy):
+    def update_cars(self, track_id, xyxy: tuple[int, int, int, int]) -> None:
         car = self.cars.setdefault(track_id, Car(xyxy))
         car.num_disappearances = 0
 
@@ -112,14 +143,14 @@ class TrackObserver:
 
 
     @staticmethod
-    def calc_central_point(bbox: list[int]) -> tuple[int, int]:
+    def calc_central_point(bbox: tuple[int, int, int, int]) -> tuple[int, int]:
         return (
             (bbox[0] + bbox[2]) // 2,
             (bbox[1] + bbox[3]) // 2,
         )
 
     @staticmethod
-    def calc_bottom_point(bbox: list[int]) -> tuple[int, int]:
+    def calc_bottom_point(bbox: tuple[int, int, int, int]) -> tuple[int, int]:
         return (
             (bbox[0] + bbox[2]) // 2,
             bbox[3],
@@ -130,6 +161,12 @@ class TrackObserver:
         x, y = obj_c_point
         x1, y1, x2, y2 = box
         return x1 <= x <= x2 and y1 <= y <= y2
+
+    @staticmethod
+    def check_intersection_boxes(box1: tuple[int, int, int, int], box2: tuple[int, int, int, int]) -> bool:
+        x11, y11, x12, y12 = box1
+        x21, y21, x22, y22 = box2
+        return max(x11, x21) <= min(x12, x22) and max(y11, y21) <= min(y12, y22)
 
     @staticmethod
     def check_intersection_polygon(obj_c_point: tuple[int, int], roi: np.ndarray) -> bool:
